@@ -1,0 +1,191 @@
+openapi: 3.1.0
+
+info:
+  title: Windows Endpoint Automation API
+  description: >
+    REST API for secure Windows endpoint maintenance and automation using
+    PowerShell.
+  version: 1.1.0
+
+servers:
+  - url: https://incommutable-jeff-heterochromous.ngrok-free.dev
+    description: Local FastAPI Server
+
+tags:
+  - name: Health
+  - name: Disk
+  - name: Cleanup
+
+paths:
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Check API health status
+      description: Returns the health status of the Windows Endpoint Automation API.
+      operationId: getHealth
+
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /disk/status:
+    get:
+      tags:
+        - Disk
+      summary: Get Disk Usage
+      description: Returns the current usage statistics of the Windows system drive.
+      operationId: getDiskStatus
+
+      security:
+        - APIKeyHeader: []
+
+      responses:
+        "200":
+          description: Disk information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiskStatusResponse"
+
+        "401":
+          description: Invalid API Key
+
+  /disk/cleanup:
+    post:
+      tags:
+        - Cleanup
+      summary: Run Windows Disk Cleanup
+      description: Executes or previews Windows temporary file cleanup using PowerShell.
+      operationId: runDiskCleanup
+
+      security:
+        - APIKeyHeader: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CleanupRequest"
+
+      responses:
+        "200":
+          description: Cleanup completed successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CleanupResponse"
+
+        "401":
+          description: Invalid API Key
+
+        "422":
+          description: Validation Error
+
+components:
+
+  securitySchemes:
+
+    APIKeyHeader:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+  schemas:
+
+    HealthResponse:
+      type: object
+
+      properties:
+
+        status:
+          type: string
+          example: online
+
+        version:
+          type: string
+          example: "1.1.0"
+
+    DiskStatusResponse:
+      type: object
+
+      properties:
+
+        drive:
+          type: string
+          example: "C:"
+
+        totalSpaceGB:
+          type: number
+          example: 226.25
+
+        usedSpaceGB:
+          type: number
+          example: 172.35
+
+        freeSpaceGB:
+          type: number
+          example: 53.90
+
+        percentUsed:
+          type: number
+          example: 76.2
+
+    CleanupRequest:
+      type: object
+
+      required:
+        - cleanup_level
+        - dry_run
+
+      properties:
+
+        cleanup_level:
+          type: string
+
+          enum:
+            - safe
+            - standard
+
+          example: safe
+
+        dry_run:
+          type: boolean
+          example: false
+
+    CleanupResponse:
+      type: object
+
+      properties:
+
+        status:
+          type: string
+          example: success
+
+        computerName:
+          type: string
+          example: NOIAAA5CD201K1T
+
+        spaceRecoveredGB:
+          type: number
+          example: 0.15
+
+        cleanupPerformed:
+          type: boolean
+          example: true
+
+        lockedFiles:
+          type: integer
+          example: 5
+
+        message:
+          type: string
+          example: Disk cleanup completed successfully.
