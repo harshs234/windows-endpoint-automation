@@ -1,0 +1,409 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Windows Endpoint Automation",
+    "description": "Secure Windows endpoint maintenance and automation using PowerShell.",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://incommutable-jeff-heterochromous.ngrok-free.dev",
+      "description": "Development Server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Check API health status",
+        "description": "Returns the health status of the window endpoint automation API.",
+        "operationId": "get_health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disk/status": {
+      "get": {
+        "tags": [
+          "Disk"
+        ],
+        "summary": "Get Disk Usage",
+        "description": "Returns the current usage statistics of the Windows system drive.",
+        "operationId": "get_disk_status_disk_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiskStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disk/cleanup": {
+      "post": {
+        "tags": [
+          "Cleanup"
+        ],
+        "summary": "Run Windows Disk Cleanup",
+        "description": "Executes or previews Windows temporary file cleanup using PowerShell.",
+        "operationId": "run_cleanup_disk_cleanup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CleanupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CleanupResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/browser/bookmarks": {
+      "post": {
+        "tags": [
+          "Bookmarks"
+        ],
+        "summary": "Import Browser Bookmarks",
+        "description": "Imports predefined bookmarks into Chrome, Edge, or both browsers.",
+        "operationId": "import_bookmarks_browser_bookmarks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookmarkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookmarkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BookmarkRequest": {
+        "properties": {
+          "browser": {
+            "type": "string",
+            "enum": [
+              "Chrome",
+              "Edge",
+              "Both"
+            ],
+            "title": "Browser",
+            "default": "Both"
+          },
+          "close_browser": {
+            "type": "boolean",
+            "title": "Close Browser",
+            "default": false
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "BookmarkRequest"
+      },
+      "BookmarkResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "browser": {
+            "type": "string",
+            "title": "Browser"
+          },
+          "profilesProcessed": {
+            "type": "integer",
+            "title": "Profilesprocessed"
+          },
+          "bookmarksAdded": {
+            "type": "integer",
+            "title": "Bookmarksadded"
+          },
+          "bookmarksSkipped": {
+            "type": "integer",
+            "title": "Bookmarksskipped"
+          },
+          "dryRun": {
+            "type": "boolean",
+            "title": "Dryrun"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "browser",
+          "profilesProcessed",
+          "bookmarksAdded",
+          "bookmarksSkipped",
+          "dryRun",
+          "message"
+        ],
+        "title": "BookmarkResponse"
+      },
+      "CleanupRequest": {
+        "properties": {
+          "cleanup_level": {
+            "type": "string",
+            "enum": [
+              "safe",
+              "standard"
+            ],
+            "title": "Cleanup Level",
+            "default": "safe"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "CleanupRequest"
+      },
+      "CleanupResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "computerName": {
+            "type": "string",
+            "title": "Computername"
+          },
+          "spaceRecoveredGB": {
+            "type": "number",
+            "title": "Spacerecoveredgb"
+          },
+          "cleanupPerformed": {
+            "type": "boolean",
+            "title": "Cleanupperformed"
+          },
+          "lockedFiles": {
+            "type": "integer",
+            "title": "Lockedfiles"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "computerName",
+          "spaceRecoveredGB",
+          "cleanupPerformed",
+          "lockedFiles",
+          "message"
+        ],
+        "title": "CleanupResponse"
+      },
+      "DiskStatusResponse": {
+        "properties": {
+          "drive": {
+            "type": "string",
+            "title": "Drive",
+            "description": "Drive being inspected",
+            "examples": [
+              "C:"
+            ]
+          },
+          "totalSpaceGB": {
+            "type": "number",
+            "title": "Totalspacegb",
+            "description": "Total drive capacity in GB",
+            "examples": [237]
+          },
+          "usedSpaceGB": {
+            "type": "number",
+            "title": "Usedspacegb",
+            "description": "Used disk space in GB",
+            "examples": [181.5]
+          },
+          "freeSpaceGB": {
+            "type": "number",
+            "title": "Freespacegb",
+            "description": "Available disk space in GB",
+            "examples": [55.5]
+          },
+          "percentUsed": {
+            "type": "number",
+            "title": "Percentused",
+            "description": "Percentage of disk currently used",
+            "examples": [76.6]
+          }
+        },
+        "type": "object",
+        "required": [
+          "drive",
+          "totalSpaceGB",
+          "usedSpaceGB",
+          "freeSpaceGB",
+          "percentUsed"
+        ],
+        "title": "DiskStatusResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "The current status of the API",
+            "example": [
+              "online"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "The current version of the API",
+            "example": [
+              "1.1.0"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version"
+        ],
+        "title": "HealthResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
+    }
+  }
+}
