@@ -25,6 +25,8 @@ def run_script(script_name: str, args: list[str] | None = None):
     if args:
         command.extend(args)
 
+    print("COMMAND:", command)
+
     result = subprocess.run(
         command,
         capture_output=True,
@@ -33,10 +35,43 @@ def run_script(script_name: str, args: list[str] | None = None):
 
     return result
 
+# def run_json_script(script_name: str, args: list[str] | None = None):
+#     result = run_script(script_name, args)
+
+#     if result.returncode != 0:
+#         raise Exception(f"Error executing script: {result.stderr}")
+
+#     return json.loads(result.stdout)
+
 def run_json_script(script_name: str, args: list[str] | None = None):
     result = run_script(script_name, args)
 
     if result.returncode != 0:
         raise Exception(f"Error executing script: {result.stderr}")
 
-    return json.loads(result.stdout)
+    print("RETURN CODE:", result.returncode)
+    print("STDOUT:")
+    print(result.stdout)
+    print("STDERR:")
+    print(result.stderr)
+
+    output = result.stdout.strip()
+
+    if not output:
+        raise Exception("PowerShell script returned no output.")
+
+    json_start_object = output.find("{")
+    json_start_array = output.find("[")
+
+    starts = [
+        pos for pos in [json_start_object, json_start_array]
+        if pos != -1
+    ]
+
+    if not starts:
+        raise Exception(f"No JSON found in PowerShell output:\n{output}")
+
+    json_start = min(starts)
+    json_output = output[json_start:]
+
+    return json.loads(json_output)
